@@ -1,0 +1,299 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile - Diabetes Detection{% endblock %}
+
+{% block content %}
+<div class="d-flex" style="min-height: 100vh;">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <div
+                style="width: 60px; height: 60px; margin: 0 auto 1rem; background: var(--gradient-primary); border-radius: var(--radius-lg); display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-eye" style="font-size: 1.5rem; color: white;"></i>
+            </div>
+            <h3 style="font-size: 1.25rem; margin: 0;">Diabetes Detection</h3>
+            <p style="color: var(--gray); font-size: 0.875rem; margin-top: 0.25rem;">{{ current_user.username }}</p>
+        </div>
+
+        <ul class="sidebar-menu">
+            <li class="sidebar-item">
+                <a href="{{ url_for('main.dashboard') }}" class="sidebar-link">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="sidebar-item">
+                <a href="{{ url_for('main.upload') }}" class="sidebar-link">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <span>Upload Image</span>
+                </a>
+            </li>
+            <li class="sidebar-item">
+                <a href="{{ url_for('main.history') }}" class="sidebar-link">
+                    <i class="fas fa-history"></i>
+                    <span>History</span>
+                </a>
+            </li>
+            <li class="sidebar-item">
+                <a href="{{ url_for('main.profile') }}" class="sidebar-link active">
+                    <i class="fas fa-user"></i>
+                    <span>Profile</span>
+                </a>
+            </li>
+            <li class="sidebar-item" style="margin-top: auto;">
+                <a href="{{ url_for('auth.logout') }}" class="sidebar-link">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <div style="margin-bottom: 2rem;">
+            <h1 style="font-size: 2.5rem; margin-bottom: 0.5rem;">
+                <i class="fas fa-user-circle" style="margin-right: 0.5rem; color: var(--primary-light);"></i>
+                My Profile
+            </h1>
+            <p style="color: var(--gray-light); font-size: 1.125rem;">Manage your account and view your statistics</p>
+        </div>
+
+        <div class="row">
+            <!-- Profile Information Card -->
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title" style="margin: 0;">
+                            <i class="fas fa-id-card"></i> Profile Information
+                        </h3>
+                    </div>
+                    <div class="card-body" style="text-align: center;">
+                        <!-- Avatar -->
+                        <div
+                            style="width: 120px; height: 120px; margin: 0 auto 1.5rem; background: var(--gradient-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-glow);">
+                            <i class="fas fa-user" style="font-size: 3rem; color: white;"></i>
+                        </div>
+
+                        <!-- User Info -->
+                        <h2 style="margin-bottom: 0.5rem; font-size: 1.75rem;">{{ current_user.username }}</h2>
+                        <p style="color: var(--gray-light); margin-bottom: 1.5rem;">
+                            <i class="fas fa-envelope" style="margin-right: 0.5rem;"></i>
+                            {{ current_user.email }}
+                        </p>
+
+                        <!-- Account Details -->
+                        <div
+                            style="background: var(--dark-lighter); padding: 1.5rem; border-radius: var(--radius-lg); text-align: left;">
+                            <div
+                                style="display: flex; justify-content: space-between; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                                <span style="color: var(--gray-light);">
+                                    <i class="fas fa-calendar-alt"></i> Member Since
+                                </span>
+                                <span style="font-weight: 600;">{{ current_user.created_at.strftime('%B %d, %Y')
+                                    }}</span>
+                            </div>
+                            <div
+                                style="display: flex; justify-content: space-between; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                                <span style="color: var(--gray-light);">
+                                    <i class="fas fa-clock"></i> Account Age
+                                </span>
+                                <span style="font-weight: 600;">{{ ((now - current_user.created_at).days) }} days</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span style="color: var(--gray-light);">
+                                    <i class="fas fa-shield-alt"></i> Role
+                                </span>
+                                {% if current_user.is_admin %}
+                                <span class="badge badge-danger">Administrator</span>
+                                {% else %}
+                                <span class="badge badge-primary">User</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statistics & Activity -->
+            <div class="col-md-8">
+                <!-- Statistics Overview -->
+                <div class="card" style="margin-bottom: 2rem;">
+                    <div class="card-header">
+                        <h3 class="card-title" style="margin: 0;">
+                            <i class="fas fa-chart-line"></i> Your Statistics
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="stats-card">
+                                    <div class="stats-icon"
+                                        style="background: rgba(99, 102, 241, 0.1); color: var(--primary-light);">
+                                        <i class="fas fa-images"></i>
+                                    </div>
+                                    <div class="stats-value">{{ total_predictions }}</div>
+                                    <div class="stats-label">Total Scans</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="stats-card">
+                                    <div class="stats-icon"
+                                        style="background: rgba(16, 185, 129, 0.1); color: var(--accent-light);">
+                                        <i class="fas fa-check-circle"></i>
+                                    </div>
+                                    <div class="stats-value">
+                                        {{ class_stats|selectattr('0', 'equalto', 'No DR')|map(attribute='1')|sum or 0
+                                        }}
+                                    </div>
+                                    <div class="stats-label">Healthy Scans</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="stats-card">
+                                    <div class="stats-icon" style="background: rgba(239, 68, 68, 0.1); color: #fca5a5;">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                    </div>
+                                    <div class="stats-value">
+                                        {{ total_predictions - (class_stats|selectattr('0', 'equalto', 'No
+                                        DR')|map(attribute='1')|sum or 0) }}
+                                    </div>
+                                    <div class="stats-label">DR Detected</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Class Distribution -->
+                <div class="card" style="margin-bottom: 2rem;">
+                    <div class="card-header">
+                        <h3 class="card-title" style="margin: 0;">
+                            <i class="fas fa-pie-chart"></i> Prediction Breakdown
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        {% if class_stats %}
+                        {% for class_name, count, avg_conf in class_stats %}
+                        <div style="margin-bottom: 1.5rem;">
+                            <div
+                                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                                <div style="display: flex; align-items: center; gap: 1rem;">
+                                    <span
+                                        class="badge badge-{% if 'No DR' in class_name %}success{% elif 'Mild' in class_name %}info{% elif 'Moderate' in class_name %}warning{% else %}danger{% endif %}">
+                                        {{ class_name }}
+                                    </span>
+                                    <span style="color: var(--gray-lighter); font-weight: 600;">{{ count }}
+                                        predictions</span>
+                                </div>
+                                <span style="color: var(--primary-light); font-weight: 700;">
+                                    Avg: {{ (avg_conf * 100)|round(1) }}%
+                                </span>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar {% if 'No DR' in class_name %}success{% elif 'Mild' in class_name %}{% elif 'Moderate' in class_name %}warning{% else %}danger{% endif %}"
+                                    style="width: {{ (count / total_predictions * 100)|round if total_predictions > 0 else 0 }}%;">
+                                </div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-top: 0.5rem;">
+                                <span style="font-size: 0.875rem; color: var(--gray);">
+                                    {{ (count / total_predictions * 100)|round(1) if total_predictions > 0 else 0 }}% of
+                                    total
+                                </span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        {% else %}
+                        <div style="text-align: center; padding: 2rem; color: var(--gray);">
+                            <i class="fas fa-chart-pie"
+                                style="font-size: 3rem; opacity: 0.3; margin-bottom: 1rem; display: block;"></i>
+                            <p>No predictions yet. Upload your first image to see statistics!</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Account Settings -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title" style="margin: 0;">
+                            <i class="fas fa-cog"></i> Account Settings
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <!-- Email Display -->
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-envelope"></i> Email Address
+                            </label>
+                            <input type="email" class="form-control" value="{{ current_user.email }}" disabled
+                                style="opacity: 0.7; cursor: not-allowed;">
+                            <small style="color: var(--gray); font-size: 0.75rem; margin-top: 0.5rem; display: block;">
+                                Email cannot be changed. Contact administrator if needed.
+                            </small>
+                        </div>
+
+                        <!-- Username Display -->
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-user"></i> Username
+                            </label>
+                            <input type="text" class="form-control" value="{{ current_user.username }}" disabled
+                                style="opacity: 0.7; cursor: not-allowed;">
+                            <small style="color: var(--gray); font-size: 0.75rem; margin-top: 0.5rem; display: block;">
+                                Username cannot be changed.
+                            </small>
+                        </div>
+
+                        <!-- Password Change Note -->
+                        <div
+                            style="margin-top: 2rem; padding: 1.5rem; background: rgba(99, 102, 241, 0.1); border-radius: var(--radius-lg); border: 1px solid rgba(99, 102, 241, 0.2);">
+                            <h5 style="margin-bottom: 1rem;">
+                                <i class="fas fa-lock"></i> Password Security
+                            </h5>
+                            <p style="color: var(--gray-lighter); font-size: 0.875rem; margin-bottom: 1rem;">
+                                For security reasons, password changes are not available through the web interface.
+                                Please contact the system administrator if you need to change your password.
+                            </p>
+                            <div style="display: flex; gap: 0.5rem; align-items: center; color: var(--accent-light);">
+                                <i class="fas fa-shield-alt"></i>
+                                <span style="font-size: 0.875rem; font-weight: 600;">Your account is secure</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div style="margin-top: 2rem;">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title" style="margin: 0;">
+                        <i class="fas fa-bolt"></i> Quick Actions
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                        <a href="{{ url_for('main.upload') }}" class="btn btn-primary">
+                            <i class="fas fa-cloud-upload-alt"></i> Upload New Image
+                        </a>
+                        <a href="{{ url_for('main.history') }}" class="btn btn-outline">
+                            <i class="fas fa-history"></i> View History
+                        </a>
+                        <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline">
+                            <i class="fas fa-home"></i> Go to Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Set current date for account age calculation
+    const now = new Date();
+</script>
+{% endblock %}

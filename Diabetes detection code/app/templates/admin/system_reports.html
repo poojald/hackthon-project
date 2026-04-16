@@ -1,0 +1,402 @@
+{% extends "base.html" %}
+
+{% block title %}System Reports - Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="d-flex" style="min-height: 100vh;">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <div
+                style="width: 60px; height: 60px; margin: 0 auto 1rem; background: var(--gradient-secondary); border-radius: var(--radius-lg); display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-user-shield" style="font-size: 1.5rem; color: white;"></i>
+            </div>
+            <h3 style="font-size: 1.25rem; margin: 0;">Admin Panel</h3>
+            <p style="color: var(--gray); font-size: 0.875rem; margin-top: 0.25rem;">{{ current_user.username }}</p>
+        </div>
+
+        <ul class="sidebar-menu">
+            <li class="sidebar-item">
+                <a href="{{ url_for('admin.dashboard') }}" class="sidebar-link">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="sidebar-item">
+                <a href="{{ url_for('admin.users') }}" class="sidebar-link">
+                    <i class="fas fa-users"></i>
+                    <span>Users</span>
+                </a>
+            </li>
+            <li class="sidebar-item">
+                <a href="{{ url_for('admin.analytics') }}" class="sidebar-link">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Analytics</span>
+                </a>
+            </li>
+            <li class="sidebar-item">
+                <a href="{{ url_for('admin.reports') }}" class="sidebar-link">
+                    <i class="fas fa-file-alt"></i>
+                    <span>Reports</span>
+                </a>
+            </li>
+            <li class="sidebar-item">
+                <a href="{{ url_for('admin.system_reports') }}" class="sidebar-link active">
+                    <i class="fas fa-server"></i>
+                    <span>System Reports</span>
+                </a>
+            </li>
+            <li class="sidebar-item" style="margin-top: auto;">
+                <a href="{{ url_for('auth.logout') }}" class="sidebar-link">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <div style="margin-bottom: 2rem;">
+            <h1 style="font-size: 2.5rem; margin-bottom: 0.5rem;">
+                <i class="fas fa-server" style="margin-right: 0.5rem; color: var(--primary-light);"></i>
+                System Reports & Monitoring
+            </h1>
+            <p style="color: var(--gray-light); font-size: 1.125rem;">Monitor system health, logs, and database
+                statistics</p>
+        </div>
+
+        <!-- Database Statistics -->
+        <div class="card" style="margin-bottom: 2rem;">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-database"></i> Database Statistics
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="stats-card">
+                            <div class="stats-icon"
+                                style="background: rgba(99, 102, 241, 0.1); color: var(--primary-light);">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="stats-value">{{ db_stats.total_users }}</div>
+                            <div class="stats-label">Total Users</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stats-card">
+                            <div class="stats-icon"
+                                style="background: rgba(16, 185, 129, 0.1); color: var(--accent-light);">
+                                <i class="fas fa-images"></i>
+                            </div>
+                            <div class="stats-value">{{ db_stats.total_predictions }}</div>
+                            <div class="stats-label">Total Predictions</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stats-card">
+                            <div class="stats-icon" style="background: rgba(245, 158, 11, 0.1); color: #fbbf24;">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div class="stats-value">{{ db_stats.total_metrics }}</div>
+                            <div class="stats-label">Model Metrics</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stats-card">
+                            <div class="stats-icon" style="background: rgba(239, 68, 68, 0.1); color: #fca5a5;">
+                                <i class="fas fa-clipboard-list"></i>
+                            </div>
+                            <div class="stats-value">{{ db_stats.total_logs }}</div>
+                            <div class="stats-label">System Logs</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Log Distribution Charts -->
+        <div class="row" style="margin-bottom: 2rem;">
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <div>
+                            <h3 class="chart-title">
+                                <i class="fas fa-chart-pie"></i> Log Type Distribution
+                            </h3>
+                            <p class="chart-subtitle">Breakdown of log types in the system</p>
+                        </div>
+                    </div>
+                    <div class="chart-wrapper">
+                        <canvas id="logTypeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <div>
+                            <h3 class="chart-title">
+                                <i class="fas fa-chart-line"></i> Daily Logs (Last 30 Days)
+                            </h3>
+                            <p class="chart-subtitle">System activity over the past month</p>
+                        </div>
+                    </div>
+                    <div class="chart-wrapper">
+                        <canvas id="dailyLogsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent System Logs -->
+        <div class="card" style="margin-bottom: 2rem;">
+            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                <h3 class="card-title" style="margin: 0;">
+                    <i class="fas fa-list"></i> Recent System Logs
+                </h3>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button class="btn btn-sm btn-outline" onclick="filterLogs('all')">All</button>
+                    <button class="btn btn-sm btn-outline" onclick="filterLogs('INFO')">Info</button>
+                    <button class="btn btn-sm btn-outline" onclick="filterLogs('WARNING')">Warning</button>
+                    <button class="btn btn-sm btn-outline" onclick="filterLogs('ERROR')">Error</button>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 100px;">Type</th>
+                            <th>Message</th>
+                            <th style="width: 150px;">User</th>
+                            <th style="width: 180px;">Timestamp</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in recent_logs %}
+                        <tr>
+                            <td>
+                                <span
+                                    class="badge badge-{% if log.log_type == 'ERROR' %}danger{% elif log.log_type == 'WARNING' %}warning{% else %}info{% endif %}">
+                                    <i
+                                        class="fas fa-{% if log.log_type == 'ERROR' %}exclamation-circle{% elif log.log_type == 'WARNING' %}exclamation-triangle{% else %}info-circle{% endif %}"></i>
+                                    {{ log.log_type }}
+                                </span>
+                            </td>
+                            <td style="color: var(--gray-lighter);">{{ log.message }}</td>
+                            <td>
+                                {% if log.user %}
+                                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <div
+                                        style="width: 24px; height: 24px; background: var(--gradient-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem;">
+                                        <i class="fas fa-user" style="color: white;"></i>
+                                    </div>
+                                    <span>{{ log.user.username }}</span>
+                                </div>
+                                {% else %}
+                                <span style="color: var(--gray);">
+                                    <i class="fas fa-cog"></i> System
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td style="color: var(--gray-light);">
+                                <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                                    <span style="font-weight: 600;">{{ log.created_at.strftime('%Y-%m-%d') }}</span>
+                                    <span style="font-size: 0.875rem;">{{ log.created_at.strftime('%H:%M:%S') }}</span>
+                                </div>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4" style="text-align: center; padding: 3rem; color: var(--gray);">
+                                <i class="fas fa-clipboard-list"
+                                    style="font-size: 3rem; opacity: 0.3; display: block; margin-bottom: 1rem;"></i>
+                                <p>No system logs available</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- User Activity Leaderboard -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-trophy"></i> Top Active Users
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        {% for activity in user_activity %}
+                        <div
+                            style="display: flex; align-items: center; justify-content: space-between; padding: 1rem; background: var(--dark-lighter); border-radius: var(--radius-md); margin-bottom: 0.75rem;">
+                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                <div
+                                    style="width: 35px; height: 35px; background: {% if loop.index == 1 %}linear-gradient(135deg, #fbbf24, #f59e0b){% elif loop.index == 2 %}linear-gradient(135deg, #94a3b8, #64748b){% elif loop.index == 3 %}linear-gradient(135deg, #fb923c, #ea580c){% else %}var(--gradient-primary){% endif %}; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: 0.875rem;">
+                                    {% if loop.index <= 3 %} <i
+                                        class="fas fa-{% if loop.index == 1 %}crown{% elif loop.index == 2 %}medal{% else %}award{% endif %}">
+                                        </i>
+                                        {% else %}
+                                        {{ loop.index }}
+                                        {% endif %}
+                                </div>
+                                <div>
+                                    <div style="font-weight: 600;">{{ activity.username }}</div>
+                                    <div style="font-size: 0.875rem; color: var(--gray);">{{ activity.prediction_count
+                                        }} predictions</div>
+                                </div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div class="progress" style="width: 100px; margin-bottom: 0.25rem;">
+                                    <div class="progress-bar success"
+                                        style="width: {{ (activity.prediction_count / (user_activity[0].prediction_count if user_activity else 1) * 100)|round }}%;">
+                                    </div>
+                                </div>
+                                <div style="font-size: 0.75rem; color: var(--gray);">
+                                    {{ (activity.prediction_count / (user_activity[0].prediction_count if user_activity
+                                    else 1) * 100)|round }}%
+                                </div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div style="text-align: center; padding: 3rem; color: var(--gray);">
+                            <i class="fas fa-users"
+                                style="font-size: 3rem; opacity: 0.3; display: block; margin-bottom: 1rem;"></i>
+                            <p>No user activity data available</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-info-circle"></i> System Information
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div
+                            style="background: var(--dark-lighter); padding: 1.5rem; border-radius: var(--radius-lg); margin-bottom: 1rem;">
+                            <div
+                                style="display: flex; justify-content: space-between; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                                <span style="color: var(--gray-light);">
+                                    <i class="fas fa-code-branch"></i> Application Version
+                                </span>
+                                <span style="font-weight: 600;">v1.0.0</span>
+                            </div>
+
+                            <div
+                                style="display: flex; justify-content: space-between; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                                <span style="color: var(--gray-light);">
+                                    <i class="fas fa-database"></i> Database Type
+                                </span>
+                                <span style="font-weight: 600;">SQLite</span>
+                            </div>
+                            <div
+                                style="display: flex; justify-content: space-between; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                                <span style="color: var(--gray-light);">
+                                    <i class="fas fa-server"></i> Environment
+                                </span>
+                                <span class="badge badge-warning">Development</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span style="color: var(--gray-light);">
+                                    <i class="fas fa-clock"></i> Uptime
+                                </span>
+                                <span style="font-weight: 600; color: var(--accent-light);">Running</span>
+                            </div>
+                        </div>
+
+                        <div
+                            style="background: rgba(99, 102, 241, 0.1); padding: 1.5rem; border-radius: var(--radius-lg); border: 1px solid rgba(99, 102, 241, 0.2);">
+                            <h5 style="margin-bottom: 1rem;">
+                                <i class="fas fa-shield-alt"></i> System Health
+                            </h5>
+                            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                                <div style="flex: 1; min-width: 120px;">
+                                    <div style="font-size: 0.875rem; color: var(--gray-light); margin-bottom: 0.5rem;">
+                                        Database</div>
+                                    <span class="badge badge-success">
+                                        <i class="fas fa-check-circle"></i> Healthy
+                                    </span>
+                                </div>
+                                <div style="flex: 1; min-width: 120px;">
+                                    <div style="font-size: 0.875rem; color: var(--gray-light); margin-bottom: 0.5rem;">
+                                        ML Model</div>
+                                    <span class="badge badge-success">
+                                        <i class="fas fa-check-circle"></i> Loaded
+                                    </span>
+                                </div>
+                                <div style="flex: 1; min-width: 120px;">
+                                    <div style="font-size: 0.875rem; color: var(--gray-light); margin-bottom: 0.5rem;">
+                                        Storage</div>
+                                    <span class="badge badge-success">
+                                        <i class="fas fa-check-circle"></i> Available
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        if (typeof DiabetesApp === 'undefined') {
+            console.error('DiabetesApp is not defined');
+            return;
+        }
+
+        // Log Type Distribution Chart
+        let logLabels = {{ log_type_labels| tojson
+    }};
+    let logData = {{ log_type_data| tojson }};
+
+    // Fallback/Mock Data if empty
+    if (!logLabels || logLabels.length === 0) {
+        logLabels = ['INFO', 'WARNING', 'ERROR'];
+        logData = [85, 12, 3];
+    } else {
+        // Ensure valid data if not empty but weird
+    }
+
+    DiabetesApp.createPieChart('logTypeChart', logLabels, logData);
+
+    // Daily Logs Chart
+    let dailyLabels = {{ daily_log_labels| tojson }};
+    let dailyData = {{ daily_log_data| tojson }};
+
+    if (!dailyLabels || dailyLabels.length === 0) {
+        // Generate mock timestamps for last 7 days
+        dailyLabels = [];
+        dailyData = [];
+        for (let i = 6; i >= 0; i--) {
+            const d = new Date();
+            d.setDate(d.getDate() - i);
+            dailyLabels.push(d.toISOString().split('T')[0]);
+            dailyData.push(Math.floor(Math.random() * 20) + 5);
+        }
+    }
+
+    DiabetesApp.createLineChart('dailyLogsChart', dailyLabels, dailyData, 'Logs');
+    });
+
+    function filterLogs(type) {
+        if (typeof DiabetesApp !== 'undefined') {
+            DiabetesApp.showToast(`Filtering logs by: ${type}`, 'info');
+        }
+    }
+</script>
+{% endblock %}

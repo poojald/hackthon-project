@@ -1,0 +1,302 @@
+{% extends "base.html" %}
+
+{% block title %}User Management - Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="d-flex" style="min-height: 100vh;">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <div
+                style="width: 60px; height: 60px; margin: 0 auto 1rem; background: var(--gradient-secondary); border-radius: var(--radius-lg); display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-user-shield" style="font-size: 1.5rem; color: white;"></i>
+            </div>
+            <h3 style="font-size: 1.25rem; margin: 0;">Admin Panel</h3>
+            <p style="color: var(--gray); font-size: 0.875rem; margin-top: 0.25rem;">{{ current_user.username }}</p>
+        </div>
+
+        <ul class="sidebar-menu">
+            <li class="sidebar-item">
+                <a href="{{ url_for('admin.dashboard') }}" class="sidebar-link">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="sidebar-item">
+                <a href="{{ url_for('admin.users') }}" class="sidebar-link active">
+                    <i class="fas fa-users"></i>
+                    <span>Users</span>
+                </a>
+            </li>
+            <li class="sidebar-item">
+                <a href="{{ url_for('admin.analytics') }}" class="sidebar-link">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Analytics</span>
+                </a>
+            </li>
+            <li class="sidebar-item">
+                <a href="{{ url_for('admin.reports') }}" class="sidebar-link">
+                    <i class="fas fa-file-alt"></i>
+                    <span>Reports</span>
+                </a>
+            </li>
+            <li class="sidebar-item">
+                <a href="{{ url_for('admin.system_reports') }}" class="sidebar-link">
+                    <i class="fas fa-server"></i>
+                    <span>System Reports</span>
+                </a>
+            </li>
+            <li class="sidebar-item" style="margin-top: auto;">
+                <a href="{{ url_for('auth.logout') }}" class="sidebar-link">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <div style="margin-bottom: 2rem;">
+            <h1 style="font-size: 2.5rem; margin-bottom: 0.5rem;">
+                <i class="fas fa-users" style="margin-right: 0.5rem; color: var(--primary-light);"></i>
+                User Management
+            </h1>
+            <p style="color: var(--gray-light); font-size: 1.125rem;">Manage and monitor all registered users</p>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="row" style="margin-bottom: 2rem;">
+            <div class="col-md-3">
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <div class="metric-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                    </div>
+                    <div class="metric-value">{{ users.total }}</div>
+                    <div class="metric-label">Total Users</div>
+                    <div class="metric-change positive">
+                        <i class="fas fa-arrow-up"></i> Active
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="metric-card success">
+                    <div class="metric-header">
+                        <div class="metric-icon success">
+                            <i class="fas fa-user-check"></i>
+                        </div>
+                    </div>
+                    <div class="metric-value">{{ users.items|selectattr('is_admin', 'equalto', False)|list|length }}
+                    </div>
+                    <div class="metric-label">Regular Users</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="metric-card danger">
+                    <div class="metric-header">
+                        <div class="metric-icon danger">
+                            <i class="fas fa-user-shield"></i>
+                        </div>
+                    </div>
+                    <div class="metric-value">{{ users.items|selectattr('is_admin', 'equalto', True)|list|length }}
+                    </div>
+                    <div class="metric-label">Administrators</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="metric-card warning">
+                    <div class="metric-header">
+                        <div class="metric-icon warning">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                    </div>
+                    <div class="metric-value">{{ (user_stats|map(attribute='prediction_count')|sum /
+                        users.total)|round(1) if users.total > 0 else 0 }}</div>
+                    <div class="metric-label">Avg Predictions/User</div>
+                </div>
+            </div>
+        </div>
+
+       
+
+        <!-- Users Table -->
+        <div class="card">
+            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                <h3 class="card-title" style="margin: 0;">
+                    <i class="fas fa-list"></i> All Users
+                </h3>
+                <div style="color: var(--gray-light);">
+                    Showing {{ users.per_page * (users.page - 1) + 1 }} -
+                    {{ [users.per_page * users.page, users.total]|min }}
+                    of {{ users.total }} users
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 60px;">ID</th>
+                            <th>User</th>
+                            <th>Email</th>
+                            <th>Predictions</th>
+                            <th>Joined</th>
+                            <th>Role</th>
+                            <th style="width: 120px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for stat in user_stats %}
+                        <tr>
+                            <td>
+                                <strong style="color: var(--primary-light);">#{{ stat.user.id }}</strong>
+                            </td>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 1rem;">
+                                    <div
+                                        style="width: 40px; height: 40px; background: {% if stat.user.is_admin %}var(--gradient-secondary){% else %}var(--gradient-primary){% endif %}; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                        <i class="fas fa-{% if stat.user.is_admin %}user-shield{% else %}user{% endif %}"
+                                            style="color: white;"></i>
+                                    </div>
+                                    <div>
+                                        <div style="font-weight: 600; color: var(--white);">{{ stat.user.username }}
+                                        </div>
+                                        <div style="font-size: 0.875rem; color: var(--gray);">
+                                            Member for {{ (now - stat.user.created_at).days }} days
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td style="color: var(--gray-lighter);">
+                                <i class="fas fa-envelope" style="margin-right: 0.5rem; color: var(--gray);"></i>
+                                {{ stat.user.email }}
+                            </td>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                    <div
+                                        style="width: 50px; height: 50px; background: rgba(99, 102, 241, 0.1); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center;">
+                                        <span
+                                            style="font-weight: 700; font-size: 1.125rem; color: var(--primary-light);">{{
+                                            stat.prediction_count }}</span>
+                                    </div>
+                                    <div style="flex: 1;">
+                                        <div class="progress" style="height: 6px;">
+                                            <div class="progress-bar"
+                                                style="width: {{ (stat.prediction_count / (user_stats|map(attribute='prediction_count')|max or 1) * 100)|round }}%;">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                                    <span style="font-weight: 600;">{{ stat.user.created_at.strftime('%Y-%m-%d')
+                                        }}</span>
+                                    <span style="font-size: 0.875rem; color: var(--gray);">{{
+                                        stat.user.created_at.strftime('%H:%M:%S') }}</span>
+                                </div>
+                            </td>
+                            <td>
+                                {% if stat.user.is_admin %}
+                                <span class="badge badge-danger" style="font-size: 0.875rem; padding: 0.5rem 1rem;">
+                                    <i class="fas fa-shield-alt"></i> Administrator
+                                </span>
+                                {% else %}
+                                <span class="badge badge-primary" style="font-size: 0.875rem; padding: 0.5rem 1rem;">
+                                    <i class="fas fa-user"></i> User
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <button class="btn btn-sm btn-primary" title="View Details"
+                                        onclick="viewUser({{ stat.user.id }})">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: 4rem;">
+                                <i class="fas fa-users"
+                                    style="font-size: 4rem; color: var(--gray); opacity: 0.3; display: block; margin-bottom: 1rem;"></i>
+                                <h3 style="color: var(--gray-light); margin-bottom: 1rem;">No users found</h3>
+                                <p style="color: var(--gray);">
+                                    {% if request.args.get('search') or request.args.get('role_filter') %}
+                                    Try adjusting your search or filter criteria.
+                                    {% else %}
+                                    No users registered yet.
+                                    {% endif %}
+                                </p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if users.pages > 1 %}
+            <div class="card-footer">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div style="color: var(--gray-light);">
+                        Page {{ users.page }} of {{ users.pages }}
+                    </div>
+
+                    <div style="display: flex; gap: 0.5rem;">
+                        {% if users.has_prev %}
+                        <a href="{{ url_for('admin.users', page=users.prev_num, search=request.args.get('search', ''), role_filter=request.args.get('role_filter', '')) }}"
+                            class="btn btn-outline">
+                            <i class="fas fa-chevron-left"></i> Previous
+                        </a>
+                        {% else %}
+                        <button class="btn btn-outline" disabled style="opacity: 0.5; cursor: not-allowed;">
+                            <i class="fas fa-chevron-left"></i> Previous
+                        </button>
+                        {% endif %}
+
+                        <div style="display: flex; gap: 0.25rem; align-items: center;">
+                            {% for page_num in users.iter_pages(left_edge=1, right_edge=1, left_current=1,
+                            right_current=2) %}
+                            {% if page_num %}
+                            <a href="{{ url_for('admin.users', page=page_num, search=request.args.get('search', ''), role_filter=request.args.get('role_filter', '')) }}"
+                                class="btn {% if page_num == users.page %}btn-primary{% else %}btn-outline{% endif %}"
+                                style="min-width: 40px;">
+                                {{ page_num }}
+                            </a>
+                            {% else %}
+                            <span style="padding: 0 0.5rem; color: var(--gray);">...</span>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+
+                        {% if users.has_next %}
+                        <a href="{{ url_for('admin.users', page=users.next_num, search=request.args.get('search', ''), role_filter=request.args.get('role_filter', '')) }}"
+                            class="btn btn-outline">
+                            Next <i class="fas fa-chevron-right"></i>
+                        </a>
+                        {% else %}
+                        <button class="btn btn-outline" disabled style="opacity: 0.5; cursor: not-allowed;">
+                            Next <i class="fas fa-chevron-right"></i>
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    function viewUser(userId) {
+        DiabetesApp.showToast('User details view - Feature coming soon!', 'info');
+    }
+
+    // Set current date for calculations
+    const now = new Date();
+</script>
+{% endblock %}

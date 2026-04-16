@@ -1,0 +1,320 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - Diabetes Detection{% endblock %}
+
+{% block content %}
+<div class="d-flex" style="min-height: 100vh;">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <div
+                style="width: 60px; height: 60px; margin: 0 auto 1rem; background: var(--gradient-secondary); border-radius: var(--radius-lg); display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-user-shield" style="font-size: 1.5rem; color: white;"></i>
+            </div>
+            <h3 style="font-size: 1.25rem; margin: 0;">Admin Panel</h3>
+            <p style="color: var(--gray); font-size: 0.875rem; margin-top: 0.25rem;">{{ current_user.username }}</p>
+        </div>
+
+        <ul class="sidebar-menu">
+            <li class="sidebar-item">
+                <a href="{{ url_for('admin.dashboard') }}" class="sidebar-link active">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="sidebar-item">
+                <a href="{{ url_for('admin.users') }}" class="sidebar-link">
+                    <i class="fas fa-users"></i>
+                    <span>Users</span>
+                </a>
+            </li>
+            <li class="sidebar-item">
+                <a href="{{ url_for('admin.analytics') }}" class="sidebar-link">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Analytics</span>
+                </a>
+            </li>
+            <li class="sidebar-item">
+                <a href="{{ url_for('admin.reports') }}" class="sidebar-link">
+                    <i class="fas fa-file-alt"></i>
+                    <span>Reports</span>
+                </a>
+            </li>
+            <li class="sidebar-item">
+                <a href="{{ url_for('admin.system_reports') }}" class="sidebar-link">
+                    <i class="fas fa-server"></i>
+                    <span>System Reports</span>
+                </a>
+            </li>
+            <li class="sidebar-item" style="margin-top: auto;">
+                <a href="{{ url_for('auth.logout') }}" class="sidebar-link">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <div style="margin-bottom: 2rem;">
+            <h1 style="font-size: 2.5rem; margin-bottom: 0.5rem;">
+                <i class="fas fa-chart-line" style="margin-right: 0.5rem; color: var(--primary-light);"></i>
+                Admin Dashboard
+            </h1>
+            <p style="color: var(--gray-light); font-size: 1.125rem;">System Overview & Analytics</p>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="row" style="margin-bottom: 2rem;">
+            <div class="col-md-3">
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <div class="metric-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                    </div>
+                    <div class="metric-value">{{ total_users }}</div>
+                    <div class="metric-label">Total Users</div>
+                    <div class="metric-change positive">
+                        <i class="fas fa-arrow-up"></i> Active
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="metric-card success">
+                    <div class="metric-header">
+                        <div class="metric-icon success">
+                            <i class="fas fa-images"></i>
+                        </div>
+                    </div>
+                    <div class="metric-value">{{ total_predictions }}</div>
+                    <div class="metric-label">Total Predictions</div>
+                    <div class="metric-change positive">
+                        <i class="fas fa-arrow-up"></i> Growing
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="metric-card warning">
+                    <div class="metric-header">
+                        <div class="metric-icon warning">
+                            <i class="fas fa-user-shield"></i>
+                        </div>
+                    </div>
+                    <div class="metric-value">{{ total_admins }}</div>
+                    <div class="metric-label">Administrators</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="metric-card danger">
+                    <div class="metric-header">
+                        <div class="metric-icon danger">
+                            <i class="fas fa-chart-pie"></i>
+                        </div>
+                    </div>
+                    <div class="metric-value">{{ class_distribution|length }}</div>
+                    <div class="metric-label">Classes Detected</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="row" style="margin-bottom: 2rem;">
+            <div class="col-md-8">
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <div>
+                            <h3 class="chart-title">
+                                <i class="fas fa-chart-line"></i> Daily Predictions (Last 30 Days)
+                            </h3>
+                            <p class="chart-subtitle">Prediction volume over time</p>
+                        </div>
+                    </div>
+                    <div class="chart-wrapper">
+                        <canvas id="dailyPredictionsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <div>
+                            <h3 class="chart-title">
+                                <i class="fas fa-pie-chart"></i> Class Distribution
+                            </h3>
+                            <p class="chart-subtitle">Prediction breakdown</p>
+                        </div>
+                    </div>
+                    <div class="chart-wrapper small">
+                        <canvas id="classDistributionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Second Row Charts -->
+        <div class="row" style="margin-bottom: 2rem;">
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <div>
+                            <h3 class="chart-title">
+                                <i class="fas fa-percentage"></i> Average Confidence by Class
+                            </h3>
+                            <p class="chart-subtitle">Model confidence levels</p>
+                        </div>
+                    </div>
+                    <div class="chart-wrapper small">
+                        <canvas id="confidenceChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-users-cog"></i> Recent Users
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        {% for user in recent_users %}
+                        <div
+                            style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem; background: var(--dark-lighter); border-radius: var(--radius-md); margin-bottom: 0.5rem;">
+                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                <div
+                                    style="width: 40px; height: 40px; background: var(--gradient-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-user" style="color: white;"></i>
+                                </div>
+                                <div>
+                                    <div style="font-weight: 600;">{{ user.username }}</div>
+                                    <div style="font-size: 0.875rem; color: var(--gray);">{{ user.email }}</div>
+                                </div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-size: 0.875rem; color: var(--gray-light);">
+                                    {{ user.created_at.strftime('%Y-%m-%d') }}
+                                </div>
+                                {% if user.is_admin %}
+                                <span class="badge badge-danger">Admin</span>
+                                {% else %}
+                                <span class="badge badge-primary">User</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Predictions Table -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-history"></i> Recent Predictions
+                </h3>
+            </div>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>User</th>
+                            <th>Prediction</th>
+                            <th>Confidence</th>
+                            <th>Processing Time</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for prediction in recent_predictions %}
+                        <tr>
+                            <td><strong>#{{ prediction.id }}</strong></td>
+                            <td>{{ prediction.user.username }}</td>
+                            <td>
+                                <span
+                                    class="badge badge-{% if 'No DR' in prediction.prediction_class %}success{% elif 'Mild' in prediction.prediction_class %}info{% elif 'Moderate' in prediction.prediction_class %}warning{% else %}danger{% endif %}">
+                                    {{ prediction.prediction_class }}
+                                </span>
+                            </td>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <div class="progress" style="flex: 1; height: 6px;">
+                                        <div class="progress-bar"
+                                            style="width: {{ (prediction.confidence * 100)|round }}%;"></div>
+                                    </div>
+                                    <span style="font-weight: 600; color: var(--primary-light);">{{
+                                        (prediction.confidence * 100)|round(1) }}%</span>
+                                </div>
+                            </td>
+                            <td style="color: var(--gray-light);">
+                                {% if prediction.processing_time %}
+                                {{ prediction.processing_time|round(2) }}s
+                                {% else %}
+                                N/A
+                                {% endif %}
+                            </td>
+                            <td style="color: var(--gray-light);">
+                                {{ prediction.created_at.strftime('%Y-%m-%d %H:%M') }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Daily Predictions Chart
+        const dailyLabels = [];
+        const dailyData = [];
+
+        {% if daily_predictions %}
+        {% for item in daily_predictions %}
+        // Access by index to be safe (date is 0, count is 1)
+        dailyLabels.push({{ item[0] | string | tojson }});
+    dailyData.push({{ item[1] }});
+    {% endfor %}
+    {% endif %}
+
+    // Fallback or specific visuals if no data
+    if (dailyLabels.length === 0) {
+        // Optional: Add placeholder data to show empty graph structure
+        // dailyLabels.push('No Data'); dailyData.push(0);
+    }
+
+    if (typeof DiabetesApp !== 'undefined') {
+        DiabetesApp.createLineChart('dailyPredictionsChart', dailyLabels, dailyData, 'Predictions');
+
+        // Class Distribution Chart
+        const classLabels = [];
+        const classData = [];
+        {% if class_distribution %}
+        {% for item in class_distribution %}
+        classLabels.push({{ item[0]| tojson }});
+    classData.push({{ item[1] }});
+    {% endfor %}
+    {% endif %}
+    DiabetesApp.createPieChart('classDistributionChart', classLabels, classData);
+
+    // Confidence Chart
+    const confLabels = [];
+    const confData = [];
+    {% if avg_confidence_by_class %}
+    {% for item in avg_confidence_by_class %}
+    confLabels.push({{ item[0]| tojson }});
+    confData.push({{ (item[1] * 100) | round(2) }});
+    {% endfor %}
+    {% endif %}
+    DiabetesApp.createBarChart('confidenceChart', confLabels, confData, 'Confidence (%)');
+        } else {
+        console.error('DiabetesApp is not defined. Charts cannot be rendered.');
+    }
+    });
+</script>
+{% endblock %}

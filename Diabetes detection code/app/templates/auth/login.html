@@ -1,0 +1,418 @@
+{% extends "base.html" %}
+
+{% block title %}Login - Diabetes AI System{% endblock %}
+
+{% block body %}
+<div class="login-wrapper">
+    <!-- Medical Tech Background Effects -->
+    <div
+        style="position: absolute; inset: 0; background-image: radial-gradient(#1e293b 1px, transparent 1px); background-size: 32px 32px; opacity: 0.3; pointer-events: none;">
+    </div>
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+
+    <div class="container-fluid h-100 position-relative z-10">
+        <div class="row h-100 align-items-center">
+            <!-- Left Side: Hero / Value Prop -->
+            <div class="col-lg-7 d-none d-lg-flex flex-column justify-content-center h-100 p-5 position-relative">
+                <div class="hero-content fade-in" style="max-width: 700px; margin: 0 auto;">
+                    <div class="brand-badge mb-4">
+                        <i class="fas fa-heartbeat"></i> Medical AI v2.1
+                    </div>
+
+                    <h1 class="hero-title">
+                        Precision Healthcare <br>
+                        <span class="text-gradient">Powered by Intelligence</span>
+                    </h1>
+
+                    <p class="hero-subtitle mt-4">
+                        Access the next generation of diabetic retinopathy diagnostics.
+                        Our Deep Learning models provide clinical-grade analysis in seconds.
+                    </p>
+
+                    <div class="features-grid mt-5">
+                        <div class="feature-item">
+                            <div class="feature-icon">
+                                <i class="fas fa-microscope"></i>
+                            </div>
+                            <div>
+                                <h3>Clinical Accuracy</h3>
+                                <p>96.5% validated accuracy on test datasets.</p>
+                            </div>
+                        </div>
+
+                        <div class="feature-item">
+                            <div class="feature-icon">
+                                <i class="fas fa-bolt"></i>
+                            </div>
+                            <div>
+                                <h3>Instant Results</h3>
+                                <p>Real-time inference processing.</p>
+                            </div>
+                        </div>
+
+                        <div class="feature-item">
+                            <div class="feature-icon">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <div>
+                                <h3>HIPAA Compliant</h3>
+                                <p>Enterprise-grade data security.</p>
+                            </div>
+                        </div>
+
+                        <div class="feature-item">
+                            <div class="feature-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div>
+                                <h3>Data Analytics</h3>
+                                <p>Longitudinal patient tracking.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side: Login Form -->
+            <div class="col-lg-5 h-100 d-flex align-items-center justify-content-center position-relative p-0">
+                <!-- Mobile overlay background -->
+                <div class="d-lg-none position-absolute w-100 h-100"
+                    style="background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px); z-index: 0;"></div>
+
+                <div class="login-card-wrapper position-relative z-10 w-100 p-4" style="max-width: 480px;">
+
+                    <!-- Flash Messages -->
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                    <div class="mb-4">
+                        {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} fade-in"
+                            style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); color: #10b981;">
+                            <i
+                                class="fas fa-{% if category == 'success' %}check-circle{% else %}info-circle{% endif %}"></i>
+                            {{ message }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    {% endwith %}
+
+                    <div class="card card-glass fade-in slide-up">
+                        <div class="card-body p-4 p-md-5">
+                            <div class="text-center mb-5">
+                                <div class="login-logo-box mb-4">
+                                    <i class="fas fa-fingerprint"></i>
+                                </div>
+                                <h2 class="mb-2" style="font-weight: 700; color: #f8fafc;">Welcome Back</h2>
+                                <p class="text-muted">Enter your credentials to access the system</p>
+                            </div>
+
+                            <form method="POST" action="{{ url_for('auth.login') }}">
+                                <div class="form-group mb-4">
+                                    <label for="username" class="form-label">
+                                        Username
+                                    </label>
+                                    <input type="text" id="username" name="username"
+                                        class="form-control form-control-lg" placeholder="e.g. admin" required
+                                        autofocus>
+                                </div>
+
+                                <div class="form-group mb-4">
+                                    <label for="password" class="form-label">
+                                        Password
+                                    </label>
+                                    <div class="position-relative">
+                                        <input type="password" id="password" name="password"
+                                            class="form-control form-control-lg" placeholder="••••••••" required>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-content-between align-items-center mb-4">
+                                    <div class="form-check">
+                                        <input type="checkbox" id="remember" name="remember" class="form-check-input">
+                                        <label for="remember" class="form-check-label text-sm text-muted ms-2">Remember
+                                            me</label>
+                                    </div>
+                                    <a href="#" class="text-sm text-emerald text-decoration-none">Recovery?</a>
+                                </div>
+
+                                <button type="submit" class="btn btn-emerald btn-lg w-100 mb-4">
+                                    Sign In <i class="fas fa-arrow-right ms-2"></i>
+                                </button>
+
+                                <div class="divider d-flex align-items-center my-4">
+                                    <span class="line flex-grow-1 bg-white-10" style="height: 1px;"></span>
+                                    <span class="mx-3 text-muted text-sm">New User?</span>
+                                    <span class="line flex-grow-1 bg-white-10" style="height: 1px;"></span>
+                                </div>
+
+                                <a href="{{ url_for('auth.register') }}" class="btn btn-outline-light w-100">
+                                    Create Account
+                                </a>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-4">
+                        <p class="text-xs text-muted mb-0">
+                            Protected by reCAPTCHA and subject to the Privacy Policy.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800&display=swap');
+
+    /* Custom Page Styles */
+    .login-wrapper {
+        min-height: 100vh;
+        background: #0f172a;
+        /* Slate 900 */
+        position: relative;
+        overflow: hidden;
+        font-family: 'Figtree', sans-serif;
+        color: #f8fafc;
+    }
+
+    /* Hero Typography */
+    .hero-title {
+        font-size: 3.5rem;
+        line-height: 1.1;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        margin-bottom: 0;
+    }
+
+    .hero-subtitle {
+        font-size: 1.25rem;
+        color: #94a3b8;
+        /* Slate 400 */
+        line-height: 1.6;
+    }
+
+    .text-gradient {
+        background: linear-gradient(135deg, #10b981 0%, #38bdf8 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .brand-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: rgba(16, 185, 129, 0.1);
+        border: 1px solid rgba(16, 185, 129, 0.2);
+        border-radius: 9999px;
+        color: #10b981;
+        font-weight: 600;
+        font-size: 0.875rem;
+    }
+
+    /* Features Grid */
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 2rem;
+        max-width: 600px;
+    }
+
+    .feature-item {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .feature-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: rgba(30, 41, 59, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #10b981;
+        font-size: 1.25rem;
+        flex-shrink: 0;
+    }
+
+    .feature-item h3 {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+        color: #f1f5f9;
+    }
+
+    .feature-item p {
+        font-size: 0.875rem;
+        color: #94a3b8;
+        margin: 0;
+    }
+
+    /* Login Card Specifics */
+    .card-glass {
+        background: rgba(30, 41, 59, 0.7);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 1.5rem;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+
+    .login-logo-box {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto;
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        color: white;
+        box-shadow: 0 10px 30px -5px rgba(16, 185, 129, 0.4);
+    }
+
+    .form-control-lg {
+        background: rgba(15, 23, 42, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #f8fafc;
+        padding: 1rem 1.25rem;
+        font-size: 1rem;
+        border-radius: 0.75rem;
+    }
+
+    .form-control-lg:focus {
+        background: rgba(15, 23, 42, 0.8);
+        border-color: #10b981;
+        box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+        color: #f8fafc;
+    }
+
+    .form-label {
+        color: #94a3b8;
+        font-size: 0.875rem;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+
+    .btn-emerald {
+        background: #10b981;
+        border: none;
+        color: white;
+        padding: 1rem;
+        font-weight: 600;
+        border-radius: 0.75rem;
+        transition: all 0.2s;
+        box-shadow: 0 10px 20px -5px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-emerald:hover {
+        background: #059669;
+        transform: translateY(-2px);
+        box-shadow: 0 15px 30px -5px rgba(16, 185, 129, 0.4);
+    }
+
+    .text-emerald {
+        color: #10b981;
+    }
+
+    .btn-outline-light {
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #94a3b8;
+        background: transparent;
+        padding: 0.875rem;
+        border-radius: 0.75rem;
+        font-weight: 500;
+    }
+
+    .btn-outline-light:hover {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: #f1f5f9;
+        color: #f1f5f9;
+    }
+
+    /* Background Blobs */
+    .blob {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(80px);
+        z-index: 0;
+        opacity: 0.2;
+    }
+
+    .blob-1 {
+        top: -10%;
+        left: -10%;
+        width: 600px;
+        height: 600px;
+        background: #10b981;
+        /* Emerald */
+        animation: float 20s infinite ease-in-out;
+    }
+
+    .blob-2 {
+        bottom: -10%;
+        right: -5%;
+        width: 500px;
+        height: 500px;
+        background: #38bdf8;
+        /* Sky Blue */
+        animation: float 25s infinite ease-in-out reverse;
+    }
+
+    @keyframes float {
+
+        0%,
+        100% {
+            transform: translate(0, 0);
+        }
+
+        33% {
+            transform: translate(30px, -50px);
+        }
+
+        66% {
+            transform: translate(-20px, 20px);
+        }
+    }
+
+    /* Animations */
+    .slide-up {
+        animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(40px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .bg-white-10 {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .text-sm {
+        font-size: 0.875rem;
+    }
+
+    .text-xs {
+        font-size: 0.75rem;
+    }
+
+    .z-10 {
+        z-index: 10;
+    }
+</style>
+{% endblock %}
